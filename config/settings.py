@@ -2,10 +2,13 @@
 Django settings for Ronak Electronics & Agency Lead Generation Backend.
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = 'django-insecure-ronak-electronics-leadgen-secret-key-prod-dev'
 
@@ -27,6 +30,8 @@ INSTALLED_APPS = [
 
     # Local apps
     'leads.apps.LeadsConfig',
+    'whatsapp.apps.WhatsappConfig',
+    'cof.apps.CofConfig',
 ]
 
 MIDDLEWARE = [
@@ -105,3 +110,10 @@ CORS_ALLOW_HEADERS = [
     'x-source',
     'x-event-type',
 ]
+
+# WhatsApp Cloud API Configuration
+WHATSAPP_API_TOKEN = os.getenv("WHATSAPP_API_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_BUSINESS_ACCOUNT_ID = os.getenv("WHATSAPP_BUSINESS_ACCOUNT_ID", "")
+WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.getenv("WHATSAPP_WEBHOOK_VERIFY_TOKEN", "ronak_whatsapp_verify_token")
+WHATSAPP_SUPPORT_PHONE = os.getenv("WHATSAPP_SUPPORT_PHONE", "919898647777")
