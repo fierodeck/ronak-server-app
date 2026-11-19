@@ -169,7 +169,11 @@ def save_or_update_lead(
             existing_lead.event_type = event_type
 
         # Update customer profile if new info provided
-        if cust["name"] and (existing_lead.name in ("Website Inquirer", "Website Visitor", "Google User", "") or cust["name"] != "Website Inquirer"):
+        GENERIC_VISITOR_NAMES = ("Website Inquirer", "Website Visitor", "Direct Web Visitor", "Google User", "")
+        if cust["name"] and cust["name"] not in GENERIC_VISITOR_NAMES:
+            # New name is a real customer name, Google name, or detailed attribution name
+            existing_lead.name = cust["name"]
+        elif cust["name"] and existing_lead.name in GENERIC_VISITOR_NAMES:
             existing_lead.name = cust["name"]
 
         if phone and not existing_lead.phone:

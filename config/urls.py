@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.views.generic.base import RedirectView
 
 
 def index_view(request):
@@ -22,11 +23,8 @@ api_v1 = [
 ]
 
 urlpatterns = [
-    # path("", index_view, name="index"),
-    # path("admin/", admin.site.urls),
-    path("", admin.site.urls),
-    path("api/v1/", include(api_v1)),
-
     path("api/", include(api_v1)),
-
+    path("api/v1/", include(api_v1)),
+    path("admin/", admin.site.urls),
+    path("", RedirectView.as_view(url="/admin/", permanent=False)),
 ]

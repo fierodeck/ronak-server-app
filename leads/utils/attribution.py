@@ -26,11 +26,49 @@ def extract_attribution_from_dict(payload: Dict[str, Any]) -> Dict[str, Any]:
             or ""
         )
 
+    utm_source = clean_string(get_attr("utm_source")) or None
+    utm_medium = clean_string(get_attr("utm_medium")) or None
+    utm_campaign = clean_string(get_attr("utm_campaign")) or None
+    referrer = clean_string(get_attr("referrer")) or None
+    source = clean_string(payload.get("source") or data.get("source") or "")
+
+    # Auto-detect organic search or direct web if no paid UTM parameters exist
+    if not utm_source and not utm_campaign:
+        ref_lower = (referrer or "").lower()
+        if "google." in ref_lower:
+            utm_source = "google"
+            utm_medium = "organic"
+            utm_campaign = "google_organic_search"
+        elif "bing." in ref_lower:
+            utm_source = "bing"
+            utm_medium = "organic"
+            utm_campaign = "bing_organic_search"
+        elif "yahoo." in ref_lower:
+            utm_source = "yahoo"
+            utm_medium = "organic"
+            utm_campaign = "yahoo_organic_search"
+        elif "duckduckgo." in ref_lower:
+            utm_source = "duckduckgo"
+            utm_medium = "organic"
+            utm_campaign = "duckduckgo_organic"
+        elif "instagram." in ref_lower:
+            utm_source = "instagram"
+            utm_medium = "social"
+            utm_campaign = "organic_instagram"
+        elif "facebook." in ref_lower or "fb.me" in ref_lower:
+            utm_source = "facebook"
+            utm_medium = "social"
+            utm_campaign = "organic_facebook"
+        elif source in ("web_visit", "ronak_electronics_web"):
+            utm_source = "direct"
+            utm_medium = "none"
+            utm_campaign = "direct_web"
+
     return {
         "visitor_id": clean_string(get_attr("visitor_id")) or None,
-        "utm_source": clean_string(get_attr("utm_source")) or None,
-        "utm_medium": clean_string(get_attr("utm_medium")) or None,
-        "utm_campaign": clean_string(get_attr("utm_campaign")) or None,
+        "utm_source": utm_source,
+        "utm_medium": utm_medium,
+        "utm_campaign": utm_campaign,
         "utm_term": clean_string(get_attr("utm_term")) or None,
         "utm_content": clean_string(get_attr("utm_content")) or None,
         "gclid": clean_string(get_attr("gclid")) or None,
@@ -40,7 +78,7 @@ def extract_attribution_from_dict(payload: Dict[str, Any]) -> Dict[str, Any]:
         "wbraid": clean_string(get_attr("wbraid")) or None,
         "fbclid": clean_string(get_attr("fbclid")) or None,
         "landing_page": clean_string(get_attr("landing_page") or get_attr("path")) or None,
-        "referrer": clean_string(get_attr("referrer")) or None,
+        "referrer": referrer,
     }
 
 
@@ -61,8 +99,22 @@ def extract_customer_from_dict(payload: Dict[str, Any]) -> Dict[str, Any]:
         or context.get("name")
         or context.get("customerName")
         or context.get("fullName")
-        or "Website Inquirer"
+        or ""
     )
+
+    if not name or name == "Website Inquirer":
+        source = context.get("source") or payload.get("source") or ""
+        ref = (context.get("referrer") or payload.get("referrer") or "").lower()
+        if "google." in ref:
+            name = "Organic Search (Google)"
+        elif "bing." in ref:
+            name = "Organic Search (Bing)"
+        elif "yahoo." in ref:
+            name = "Organic Search (Yahoo)"
+        elif source in ("web_visit", "ronak_electronics_web"):
+            name = "Direct Web Visitor"
+        else:
+            name = "Website Visitor"
 
     # Extract Phone
     phone = (
